@@ -155,11 +155,11 @@ SELECT
 FROM
     alunos A
 INNER JOIN
-    notas N ON A.id = N.aluno_id       -- 1. Conecta o aluno com suas notas
+    notas N ON A.id = N.aluno_id       
 INNER JOIN
-    disciplinas D ON N.disciplina_id = D.id -- 2. Conecta a nota à disciplina
+    disciplinas D ON N.disciplina_id = D.id 
 INNER JOIN
-    turmas T ON A.turma_id = T.id      -- 3. Conecta o aluno à sua turma
+    turmas T ON A.turma_id = T.id     
 ORDER BY
     Nome_Aluno, Disciplina, Bimestre;
     
@@ -174,7 +174,7 @@ CREATE PROCEDURE CalcularMediaGeral (
     OUT p_media_geral DECIMAL(4, 2)
 )
 BEGIN
-    -- Calcula a média aritmética de todas as notas do aluno
+  
     SELECT
         AVG(nota)
     INTO
@@ -197,10 +197,10 @@ SELECT 'Média Geral do Aluno 2:' AS Teste, @media_geral_do_aluno AS Media_Geral
  DELIMITER //
 
 CREATE PROCEDURE ListarAlunosPorTurma (
-    IN p_turma_id INT -- Parâmetro de entrada: o ID da turma desejada
+    IN p_turma_id INT 
 )
 BEGIN
-    -- Seleciona os detalhes dos alunos, da turma e do professor
+    
     SELECT
         A.nome AS Nome_do_Aluno,
         A.email AS Email_do_Aluno,
@@ -209,11 +209,11 @@ BEGIN
     FROM
         alunos A
     INNER JOIN
-        turmas T ON A.turma_id = T.id -- Conecta Alunos à Turma
+        turmas T ON A.turma_id = T.id 
     INNER JOIN
-        professores P ON T.professor_id = P.id -- Conecta a Turma ao Professor
+        professores P ON T.professor_id = P.id 
     WHERE
-        A.turma_id = p_turma_id -- Filtra apenas os alunos da turma especificada
+        A.turma_id = p_turma_id 
     ORDER BY
         A.nome;
 END //
@@ -249,14 +249,18 @@ ORDER BY
 -- Rankear os melhores alunos
 SELECT
     A.nome AS Nome_do_Aluno,
+    -- Calcula a média geral de todas as notas do aluno (em todas as disciplinas e bimestres)
     AVG(N.nota) AS Media_Geral,
+    -- Usa uma função de janela (Window Function) para ranquear os alunos
+    -- RANK() salta posições em caso de empate (ex: 1º, 2º, 2º, 4º)
+    -- DENSE_RANK() não salta posições em caso de empate (ex: 1º, 2º, 2º, 3º)
     RANK() OVER (ORDER BY AVG(N.nota) DESC) AS Posicao_Ranking
 FROM
     alunos A
 INNER JOIN
-    notas N ON A.id = N.aluno_id 
+    notas N ON A.id = N.aluno_id -- Conecta Alunos às Notas
 GROUP BY
-    A.id, A.nome 
+    A.id, A.nome -- Agrupa para calcular a média de cada aluno
 ORDER BY
     Media_Geral DESC;
 
